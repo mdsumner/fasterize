@@ -66,7 +66,7 @@ Rcpp::S4 fasterize(Rcpp::DataFrame &sf,
                    Rcpp::Nullable<std::string> field = R_NilValue,
                    std::string fun = "last",
                    double background = NA_REAL,
-                   Rcpp::Nullable<std::string> by = R_NilValue) {
+                   Rcpp::Nullable<std::string> by = R_NilValue, Rcpp::LogicalVector line = NA_LOGICAL) {
 
   Rcpp::List polygons;
   Rcpp::NumericVector field_vals;
@@ -121,7 +121,7 @@ Rcpp::S4 fasterize(Rcpp::DataFrame &sf,
     b = by_vals.begin();
     for(; p != polygons.end(); ++p, ++f, ++b) {
       rasterize_polygon(raster_array.slice(by_map[(*b)]), (*p), (*f),
-                        ras, pixel_function);
+                        ras, pixel_function, line[0]);
     }
     //Update brick-specific raster slots
     Rcpp::StringVector layernames(n_layers);
@@ -180,7 +180,7 @@ Rcpp::S4 fasterize(Rcpp::DataFrame &sf,
     f = field_vals.begin();
     for(; p != polygons.end(); ++p, ++f) {
       rasterize_polygon(raster_array.slice(0), (*p), (*f),
-                        ras, pixel_function);
+                        ras, pixel_function, line[0]);
     }
 
     //Fill in the empty cells

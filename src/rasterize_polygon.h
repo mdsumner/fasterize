@@ -11,5 +11,5 @@ extern void rasterize_polygon(arma::mat &raster,
                        Rcpp::RObject polygon,
                        double &value,
                        RasterInfo &ras,
-                       PixelFn &pixel_function);
+                       PixelFn &pixel_function, bool line);
 #endif

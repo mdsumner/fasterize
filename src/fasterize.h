@@ -10,5 +10,5 @@ extern Rcpp::S4 fasterize(Rcpp::DataFrame &sf,
                    std::string field,
                    std::string fun,
                    double background,
-                   std::string by);
+                   std::string by, Rcpp::LogicalVector line);
 #endif

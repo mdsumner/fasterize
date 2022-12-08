@@ -11,7 +11,7 @@
 
 void rasterize_polygon(arma::mat &raster, Rcpp::RObject polygon,
                        double &poly_value,
-                       RasterInfo &ras, PixelFn &pixel_function) {
+                       RasterInfo &ras, PixelFn &pixel_function, bool line) {
 
   std::list<Edge>::iterator it;
   arma::uword counter, xstart, xend, xpix;
@@ -58,9 +58,13 @@ void rasterize_polygon(arma::mat &raster, Rcpp::RObject polygon,
                  ((*it).x > ras.ncold ?
                    ras.ncold :
                    std::ceil((*it).x));
+        if (line) {
+          pixel_function(raster, yline, xstart, poly_value);
+        } else {
         for(xpix = xstart; xpix < xend; ++xpix) {
           //note x/y switched here as raster objects store values this way
           pixel_function(raster, yline, xpix, poly_value);
+        }
         }
       }
     }
