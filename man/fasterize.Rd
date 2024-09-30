@@ -72,6 +72,9 @@ ex <- as.numeric(wk_bbox(pols))[c(1, 3, 2, 4)]
 r <- raster::raster(raster::extent(ex), res = 1)
 r <- fasterize(pols, r, field = "value", fun="sum")
 plot(r)
+
+pols$group <- c("g1", "g1", "g2")
+rg <- fasterize(pols, r, field  = pols$value, by = "group")
 }
 \references{
 Wylie, C., Romney, G., Evans, D., & Erdahl, A. (1967).

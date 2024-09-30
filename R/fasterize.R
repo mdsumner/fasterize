@@ -3,6 +3,26 @@ make_sf <- function(x, attr = NULL) {
               sf_column = "geom", class = c("sf", "data.frame" ))
 }
   
+geom_from_terra <- function(x) {
+  geom <- try(wk::wkb(x@ptr$wkb_raw()), silent = TRUE)
+  geom
+}
+
+field_from <- function(x, field) {
+  if (!inherits(x, "data.frame") && !inherits(x, "SpatVector")) return(NULL)
+  if (is.null(field)) return(NULL)
+  unlist(x[[field[1L]]])
+}
+
+sfgeom_from <- function(x) {
+  if (inherits(x, "SpatVector")) {
+    x <- geom_from_terra(x)
+  }
+  geom <- wk::wk_handle(x, wk::sfc_writer())
+  
+  geom
+}
+   
   
 #' Rasterize a vector or dataframe object of polygons
 #'
@@ -58,35 +78,50 @@ make_sf <- function(x, attr = NULL) {
 #' r <- raster::raster(raster::extent(ex), res = 1)
 #' r <- fasterize(pols, r, field = "value", fun="sum")
 #' plot(r)
+#' 
+#' pols$group <- c("g1", "g1", "g2")
+#' rg <- fasterize(pols, r, field  = pols$value, by = "group")
 #' @export
 fasterize <- function(sf, raster, field = NULL, fun = "last", background = NA_real_, by = NULL) {
+  fieldwasnull <- is.null(field)
+  bywasnull <- is.null(by)
   
-    ## check the types up here
+  geom <- sfgeom_from(sf)
+  
+  if ((is.numeric(field) && length(field) == length(geom) )) {
+    ## do nothing
+  } else {
+    field <- field_from(sf, field)  ## at this point we have a vector of values, same length as geom, or NULL
+  }
+  if (length(by) == length(geom) ) {
+    ## do nothing
+  } else {
+    by <- field_from(sf, by)  ## at this point we have a vector of values, same length as geom, or NULL
+  }
+  ## check the types up here
   types <- wk::wk_meta(sf)$geometry_type
   bad <- ! types %in% c(3, 6)
 
-  ## ok so we get geometry from anything wk can handle
-  geom <- wk::wk_handle(sf, wk::sfc_writer())
-  
+
   if (any(bad)) {
     if (all(bad)) stop("no polygon geometries to fasterize")
-    geom <- geom[!bad, ] 
+    geom <- geom[!bad, ]
+    field <- field[!bad]
     message(sprintf("removing %i geometries that are not polygon or multipolygon equivalent", sum(bad)))
   }
-  
 
-  sf1 <- make_sf(geom)
-  if ( !is.null(field)) {
-    if (length(field) == 1L) {
-      sf1[[field]] <- sf[[field]]
-    } else if (length(field) == dim(sf1)[1L]) {
-      sf1[["field"]] <- field
+  x1 <- make_sf(geom)
+  if (length(field) == dim(x1)[1L]) {
+      x1[["field"]] <- field
       field <- "field"
-    }
   }
-  if (inherits(sf, "data.frame") && !is.null(by)) {
-    sf1[[by]] <- sf[[by]]
+  if (length(by) == dim(x1)[1L]) {
+      x1[["by"]] <- by
+      by <- "by"
   }
-  fasterize_cpp(sf1, raster, field, fun, background, by)
+  if (!fieldwasnull && is.null(field)) stop("'field' not found in data")
+  if (!bywasnull && is.null(by)) stop("'by' not found in data")
+  
+  fasterize_cpp(x1, raster, field, fun, background, by)
 }
 

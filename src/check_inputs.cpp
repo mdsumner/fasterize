@@ -28,9 +28,8 @@ void check_inputs(Rcpp::DataFrame &sf,
     field_vals = sf[Rcpp::as<std::string>(field.get())];
   } else {
     field_vals = Rcpp::rep(1, polygons.size());
+    
   }
-
-
   std::string err = err_msg.str();
   if(!err.empty()) {
     Rcpp::stop(err);

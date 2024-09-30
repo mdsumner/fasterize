@@ -1,3 +1,11 @@
+# fasterize dev (could be 1.2.0)
+
+* TODO we must import terra and somehow have a way to see if @ptr is stale or not. 
+
+* Now supporting SpatVector input as well as other geometry/dataframe types. 
+
+* 'by' now implemented for non-sf sources, and like 'field' can be an input vector or a column name. 
+
 # fasterize 1.1.0
 
 * Cleaned up old spelling detritus in tests, thanks to CRAN. 
